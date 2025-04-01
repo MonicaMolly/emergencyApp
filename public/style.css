@@ -1,0 +1,88 @@
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to top right, #a3d9a5, #ffffff);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Auth Container */
+#auth-app {
+    background-color: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+h1 {
+    color: #34c759; /* Green color */
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+/* Input Fields */
+input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+
+input:focus {
+    border-color: #34c759;
+}
+
+/* Buttons */
+button {
+    background-color: #34c759;
+    color: white;
+    padding: 12px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #28a745;
+}
+
+/* Toggle Button */
+button:nth-child(2) {
+    background-color: transparent;
+    color: #34c759;
+    border: 1px solid #34c759;
+    margin-top: 20px;
+}
+
+button:nth-child(2):hover {
+    background-color: #34c759;
+    color: white;
+}
+
+/* Error and Success Messages */
+.error {
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.success {
+    color: green;
+    font-size: 14px;
+    margin-top: 10px;
+}

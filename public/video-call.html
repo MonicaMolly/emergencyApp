@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Video Call</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1 id="service-name">Connecting...</h1>
+
+    <div class="video-container">
+        <video id="localVideo" autoplay playsinline></video>
+        <video id="remoteVideo" autoplay playsinline></video>
+    </div>
+
+    <button onclick="endCall()">End Call</button>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/video-call.js"></script>
+</body>
+</html>
