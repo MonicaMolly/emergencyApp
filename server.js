@@ -104,6 +104,14 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('❌ User disconnected');
     });
+
+    socket.on("chat message", (msg) => {
+        io.emit("chat message", msg); // Broadcast message to all users
+    });
+
+    socket.on("disconnect", () => {
+        console.log("User disconnected:", socket.id);
+    });
 });
 
 const PORT = process.env.PORT || 5000;

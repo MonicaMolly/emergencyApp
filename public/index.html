@@ -11,13 +11,13 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="app">
+    <div id="app"> 
         <h1>Emergency Services</h1>
-
+    
         <div v-if="!isAuthenticated">
             <button @click="goToRegister">🔑 Login / Sign Up</button>
         </div>
-
+    
         <div v-else>
             <h2>Welcome, {{ userEmail }}</h2>
             <div class="card-container">
@@ -26,7 +26,7 @@
                     <h3>Fire</h3>
                 </div>
                 <div class="card" @click="startEmergencyCall('hospital')">
-                    <img src="/image/hospital.jpg" alt="Hospital">
+                    <img src="/image/hospital-building.png" alt="Hospital">
                     <h3>Hospital</h3>
                 </div>
                 <div class="card" @click="startEmergencyCall('police')">
@@ -36,14 +36,27 @@
             </div>
             <button @click="logout">🚪 Logout</button>
         </div>
-
+    
         <p>Your Location: <span id="location">Fetching...</span></p>
         <button @click="getLocation">📍 Update Location</button>
         <div id="map" style="width: 100%; height: 300px;"></div>
-
+    
         <h3>Nearby Emergency Services</h3>
         <ul id="nearby-places"></ul>
+        <button @click="getNearbyPlaces">🔍 Find Nearby Services</button>
+    
+        <!-- Live Chat Section -->
+        <h3>Live Chat</h3>
+        <div id="chat-box">
+            <div v-for="msg in messages" :key="msg.id" class="chat-message">
+                <strong>{{ msg.user }}:</strong> {{ msg.text }}
+            </div>
+        </div>
+        <input v-model="newMessage" placeholder="Type a message..." @keyup.enter="sendMessage" />
+        <button @click="sendMessage">Send</button>
+        <button @click="clearChat">Clear Chat</button>
     </div>
+    
 
     <script>
         // Define the initMap function globally

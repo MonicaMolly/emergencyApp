@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Chat</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #messages { height: 200px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; }
+        input { width: 80%; padding: 8px; }
+        button { padding: 8px; }
+    </style>
+</head>
+<body>
+    <h2>Live Chat</h2>
+    <div id="messages"></div>
+    <input id="messageInput" type="text" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        const socket = io();
+
+        function sendMessage() {
+            const message = document.getElementById("messageInput").value;
+            socket.emit("chat message", message);
+            document.getElementById("messageInput").value = "";
+        }
+
+        socket.on("chat message", (msg) => {
+            const messageBox = document.getElementById("messages");
+            const newMessage = document.createElement("p");
+            newMessage.textContent = msg;
+            messageBox.appendChild(newMessage);
+        });
+    </script>
+</body>
+</html>
