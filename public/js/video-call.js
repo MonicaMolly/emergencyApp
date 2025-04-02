@@ -6,24 +6,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let peerConnection;
     let localStream;
+    let remoteStream;
+    let interpreterStream;
 
-    // WebRTC Video Call Setup
+    const socket = io(); // Ensure socket.io is connected
+
     const initializeVideoCall = async () => {
         const localVideo = document.getElementById('localVideo');
-        if (!localVideo) {
-            console.error("❌ Error: Local video element not found.");
-            return;
-        }
+        const remoteVideo = document.getElementById('remoteVideo');
+        const interpreterVideo = document.getElementById('interpreterVideo');
+
+        if (!localVideo || !remoteVideo || !interpreterVideo) return;
 
         try {
+            // Get local video/audio stream
             localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             localVideo.srcObject = localStream;
 
             peerConnection = new RTCPeerConnection();
+
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
+            // Handle incoming tracks
             peerConnection.ontrack = (event) => {
-                document.getElementById('remoteVideo').srcObject = event.streams[0];
+                if (!remoteStream) {
+                    remoteStream = event.streams[0];
+                    remoteVideo.srcObject = remoteStream;
+                } else if (!interpreterStream) {
+                    interpreterStream = event.streams[0];
+                    interpreterVideo.srcObject = interpreterStream;
+                }
             };
 
             peerConnection.onicecandidate = (event) => {
@@ -36,10 +48,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
             });
 
-            socket.on('answer', (answer) => {
-                peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-            });
-
             socket.on('offer', async (offer) => {
                 peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
                 const answer = await peerConnection.createAnswer();
@@ -47,43 +55,39 @@ document.addEventListener("DOMContentLoaded", function () {
                 socket.emit('answer', answer);
             });
 
+            socket.on('answer', (answer) => {
+                peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+            });
+
         } catch (error) {
             console.error('❌ Error accessing media devices:', error);
         }
     };
 
-    // Start Emergency Call
+    // Start emergency call
     const startEmergencyCall = async (service) => {
-        console.log(`Starting emergency call for: ${service}`);
-
-        if (!peerConnection) {
-            console.error("❌ Error: Peer connection is not initialized.");
-            return;
-        }
+        if (!peerConnection) return;
 
         try {
-            const room = `${service.toLowerCase()}-room`; // create the room name based on the service
-            socket.emit('joinRoom', room); // Tell the server to join the corresponding room
+            const room = `${service.toLowerCase()}-room`;
+            socket.emit('joinRoom', room);
 
             const offer = await peerConnection.createOffer();
             await peerConnection.setLocalDescription(offer);
             socket.emit('offer', offer);
-
         } catch (error) {
             console.error("❌ Error starting emergency call:", error);
         }
     };
 
-    // End Call
+    // End call
     const endCall = () => {
-        console.log('Call Ended');
-
         if (peerConnection) {
             peerConnection.close();
             peerConnection = null;
         }
     };
+    
 
-    // Start video call on page load
     initializeVideoCall();
 });

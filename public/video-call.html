@@ -7,16 +7,17 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1 id="service-name">Connecting...</h1>
-
-    <div class="video-container">
-        <video id="localVideo" autoplay playsinline></video>
-        <video id="remoteVideo" autoplay playsinline></video>
+    <div id="video-container">
+        <h2 id="service-name"></h2>
+        <video id="localVideo" autoplay muted></video>
+        <video id="remoteVideo" autoplay></video>
+        <video id="interpreterVideo" autoplay></video>  <!-- ✅ NEW video for interpreter -->
+    </div>
+    <div id="controls">
+        <button id="endCallButton" onclick="endCall()">End Call</button>
     </div>
 
-    <button onclick="endCall()">End Call</button>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="js/video-call.js"></script>
+    <script src="/socket.io/socket.io.js"></script> <!-- Make sure this points to your server -->
+    <script src="/js/video-call.js"></script>
 </body>
 </html>

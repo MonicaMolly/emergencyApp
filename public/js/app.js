@@ -1,4 +1,4 @@
-const { createApp, ref } = Vue; 
+const { createApp, ref } = Vue;
 const socket = io(); // ✅ Ensure Socket.IO connection
 
 const app = createApp({
@@ -7,7 +7,12 @@ const app = createApp({
     const userEmail = ref('');
     const userLocation = ref({ lat: null, lon: null });
     const email = ref('');
+    const password = ref('');
     const errorMessage = ref('');
+
+    // ✅ Chat Variables
+    const messages = ref([]);
+    const newMessage = ref('');
 
     // ✅ Check if user is logged in
     if (localStorage.getItem('user')) {
@@ -94,7 +99,7 @@ const app = createApp({
 
     // ✅ Start Emergency Call (Opens in New Page)
     const startEmergencyCall = (service) => {
-      window.open(`/video-call.html?service=${service}`, "_blank");
+      window.open(`video-call.html?service=${service}`, "_blank");
     };
 
     // ✅ Logout
@@ -104,7 +109,7 @@ const app = createApp({
     };
 
     // ✅ Login Function
-    const login = async () => {
+    const login = () => {
       const users = JSON.parse(localStorage.getItem("users")) || [];
       const user = users.find(
         (user) => user.email === email.value && user.password === password.value
@@ -116,43 +121,70 @@ const app = createApp({
       }
 
       isAuthenticated.value = true;
+      userEmail.value = user.email;
+      localStorage.setItem('user', JSON.stringify(user));
+      
       getLocation(); // ✅ Get user location after login
     };
+
+    // ✅ Google Maps Initialization
     function initMap() {
       const map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: 37.7749, lng: -122.4194 }, // Example location
-          zoom: 12,
+        center: { lat: 37.7749, lng: -122.4194 }, // Example location
+        zoom: 12,
       });
-  }
-  
-  // ✅ Expose initMap globally so Google Maps can access it
-  window.initMap = initMap;
-  
-  document.addEventListener("DOMContentLoaded", function () {
-    if (window.google && google.maps) {
-        initMap();
-    } else {
-        console.error("Google Maps API failed to load.");
     }
-});
 
- 
-  
+    // ✅ Ensure Google Maps API Loads Properly
+    window.initMap = initMap;
+    document.addEventListener("DOMContentLoaded", function () {
+      if (window.google && google.maps) {
+        initMap();
+      } else {
+        console.error("Google Maps API failed to load.");
+      }
+    });
+
+    // ✅ Chat Functions
+    socket.on("receiveMessage", (msg) => {
+      messages.value.push(msg);
+    });
+
+    const sendMessage = () => {
+      if (newMessage.value.trim() === "") return;
+      
+      const msg = {
+        user: userEmail.value || "Guest",
+        text: newMessage.value,
+      };
+
+      socket.emit("sendMessage", msg);
+      messages.value.push(msg);
+      newMessage.value = ""; // Clear input after sending
+    };
+
+    const clearChat = () => {
+      messages.value = [];
+    };
 
     return {
       isAuthenticated,
       userEmail,
       email,
+      password,
       errorMessage,
       goToRegister,
       startEmergencyCall,
       logout,
       login,
-      getLocation, // ✅ Expose this function in case you need to call it manually
-      initMap, // ✅ Expose this function for Google Maps initialization
-      userLocation, // ✅ Expose userLocation for map updates
-      findNearbyServices, // ✅ Expose this function for nearby services  
-
+      getLocation,
+      initMap,
+      userLocation,
+      findNearbyServices,
+      messages,  // Chat Exports
+      newMessage,
+      sendMessage,
+      clearChat,
     };
   }
 }).mount('#app');
