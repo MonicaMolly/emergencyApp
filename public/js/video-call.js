@@ -80,14 +80,19 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    // End call
+    // End call function (added here)
     const endCall = () => {
         if (peerConnection) {
             peerConnection.close();
             peerConnection = null;
+            console.log('Call ended');
         }
+
+        // Optionally, redirect the user back to the homepage or logout
+        window.location.href = '/'; // Redirect to homepage or logout
     };
-    
+        // Attach the endCall function to the button onclick event
+        document.getElementById('endCallButton').addEventListener('click', endCall);
 
     initializeVideoCall();
 });

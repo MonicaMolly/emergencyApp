@@ -28,7 +28,7 @@ const authApp = createApp({
           return;
         }
         localStorage.setItem('user', JSON.stringify(user));
-        window.location.href = "/";
+        window.location.href = "/emergency.html";
       } else {
         // SIGNUP
         if (password.value !== confirmPassword.value) {

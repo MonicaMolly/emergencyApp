@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emergency Video Call</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/emergency.css">
 </head>
 <body>
     <div id="video-container">
@@ -16,6 +16,13 @@
     <div id="controls">
         <button id="endCallButton" onclick="endCall()">End Call</button>
     </div>
+     <!-- Footer (Properly positioned below the form) -->
+     <footer class="footer">
+        <p>&copy; 2025 Emergency Video Call. All rights reserved.</p>
+    </footer>
+
+
+
 
     <script src="/socket.io/socket.io.js"></script> <!-- Make sure this points to your server -->
     <script src="/js/video-call.js"></script>

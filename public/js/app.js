@@ -128,13 +128,25 @@ const app = createApp({
     };
 
     // ✅ Google Maps Initialization
-    function initMap() {
-      const map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 37.7749, lng: -122.4194 }, // Example location
-        zoom: 12,
-      });
-    }
+   // Attach function to window object
+    window.initMap = function () {
+      const mapElement = document.getElementById("map");
+      if (!mapElement) {
+          console.error("Error: Map container not found!");
+          return;
+      }
 
+      // Initialize map
+      const map = new google.maps.Map(mapElement, {
+          center: { lat: 37.7749, lng: -122.4194 }, // San Francisco
+          zoom: 12,
+      });
+
+      console.log("✅ Google Maps Loaded Successfully!");
+    };
+
+  
+  
     // ✅ Ensure Google Maps API Loads Properly
     window.initMap = initMap;
     document.addEventListener("DOMContentLoaded", function () {
@@ -166,6 +178,9 @@ const app = createApp({
     const clearChat = () => {
       messages.value = [];
     };
+    const getNearbyPlaces = findNearbyServices;
+  
+
 
     return {
       isAuthenticated,
@@ -181,6 +196,7 @@ const app = createApp({
       initMap,
       userLocation,
       findNearbyServices,
+      getNearbyPlaces,
       messages,  // Chat Exports
       newMessage,
       sendMessage,

@@ -1,0 +1,97 @@
+/* Import Google Font for a Modern Look */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+/* General Page Styling */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: url("/image/polic.webp") no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Logo Styling */
+.logo-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.logo-container img {
+    width: 90px;
+    opacity: 0.9;
+}
+
+/* Main Content Styling */
+.intro-container {
+    margin-top: 15vh;
+    padding-left: 60px;
+    max-width: 600px;
+    animation: fadeIn 1.2s ease-in-out;
+}
+
+/* Title Styling */
+.title {
+    font-size: 48px;
+    font-weight: 700;
+    color: white;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
+    margin-bottom: 10px;
+}
+
+/* Description Styling */
+.description {
+    font-size: 20px;
+    color: #e0e0e0;
+    opacity: 0.9;
+    line-height: 1.6;
+}
+
+/* Beautiful Button */
+.btn {
+    background: linear-gradient(135deg, #00c853, #2ecc71);
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    font-size: 20px;
+    cursor: pointer;
+    margin-top: 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+}
+
+.btn:hover {
+    background: linear-gradient(135deg, #009624, #27ae60);
+    transform: scale(1.05);
+}
+
+/* Footer Styling */
+.footer {
+    margin-top: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    text-align: center;
+    padding: 12px;
+    font-size: 14px;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+}
+
+/* Smooth Fade-in Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
