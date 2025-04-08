@@ -3,28 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emergency Video Call</title>
-    <link rel="stylesheet" href="css/emergency.css">
+    <title>Video Call</title>
+    <link rel="stylesheet" href="css/video-call.css">
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
+    <script src="JS/video-call.js"></script>
 </head>
 <body>
     <div id="video-container">
-        <h2 id="service-name"></h2>
-        <video id="localVideo" autoplay muted></video>
-        <video id="remoteVideo" autoplay></video>
-        <video id="interpreterVideo" autoplay></video>  <!-- ✅ NEW video for interpreter -->
+        <!-- Local video -->
+        <video id="local-video" autoplay muted></video>
+        
+        <!-- Remote video -->
+        <video id="remote-video" autoplay></video>
+        
+        <!-- Start and End call buttons -->
+        <button id="start-call-btn" onclick="startCall()">Start Call</button>
+        <button id="end-call-btn" onclick="endCall()">End Call</button>
     </div>
-    <div id="controls">
-        <button id="endCallButton" onclick="endCall()">End Call</button>
-    </div>
-     <!-- Footer (Properly positioned below the form) -->
-     <footer class="footer">
-        <p>&copy; 2025 Emergency Video Call. All rights reserved.</p>
-    </footer>
-
-
-
-
-    <script src="/socket.io/socket.io.js"></script> <!-- Make sure this points to your server -->
-    <script src="/js/video-call.js"></script>
 </body>
 </html>
+

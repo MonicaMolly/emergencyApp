@@ -1,0 +1,65 @@
+/* Body Styling */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: url("/image/polic.webp") no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: white;
+}
+
+/* Video Container */
+#video-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    max-width: 900px;
+    width: 100%;
+    margin: auto;
+}
+
+/* Video Styling */
+#local-video,
+#remote-video {
+    width: 420px;
+    height: 300px;
+    border: 2px solid #34c759;
+    border-radius: 10px;
+    object-fit: cover;
+    margin: 15px 0;
+    background: black;
+}
+
+/* Buttons */
+button {
+    background-color: #34c759;
+    color: white;
+    padding: 12px 24px;
+    margin: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+button:hover {
+    background-color: #28a745;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #local-video,
+    #remote-video {
+        width: 90%;
+        height: auto;
+    }
+}

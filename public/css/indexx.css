@@ -1,6 +1,7 @@
 /* Import Google Font for a Modern Look */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
+
 /* General Page Styling */
 body {
     font-family: 'Poppins', sans-serif;
@@ -53,7 +54,7 @@ body {
 
 /* Beautiful Button */
 .btn {
-    background: linear-gradient(135deg, #00c853, #2ecc71);
+    background: red;
     color: white;
     border: none;
     padding: 14px 32px;
@@ -64,11 +65,6 @@ body {
     font-weight: 600;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease-in-out;
-}
-
-.btn:hover {
-    background: linear-gradient(135deg, #009624, #27ae60);
-    transform: scale(1.05);
 }
 
 /* Footer Styling */

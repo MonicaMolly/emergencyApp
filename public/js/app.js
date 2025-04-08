@@ -10,31 +10,16 @@ const app = createApp({
     const password = ref('');
     const errorMessage = ref('');
 
-    // ✅ Chat Variables
+    // Chat Variables
     const messages = ref([]);
     const newMessage = ref('');
 
-    // ✅ Check if user is logged in
+    // Check if user is logged in
     if (localStorage.getItem('user')) {
       isAuthenticated.value = true;
       userEmail.value = JSON.parse(localStorage.getItem('user')).email;
     }
 
-    // ✅ Function to Update Google Map
-    function updateMap(lat, lon) {
-      const map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat, lng: lon },
-        zoom: 15,
-      });
-
-      new google.maps.Marker({
-        position: { lat, lng: lon },
-        map: map,
-        title: "Your Location",
-      });
-    }
-
-    // ✅ Function to Get User Location
     const getLocation = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -57,10 +42,9 @@ const app = createApp({
       }
     };
 
-    // ✅ Function to Find Nearby Emergency Services
-    function findNearbyServices(lat, lon) {
+    const findNearbyServices = (lat, lon) => {
       const serviceTypes = ["hospital", "police", "fire_station"];
-      const serviceNames = { hospital: "🏥 Hospital", police: "🚔 Police", fire_station: "🔥 Fire Station" };
+      const serviceNames = { hospital: "Hospital", police: "Police", fire_station: "Fire Station" };
 
       const map = new google.maps.Map(document.createElement("div"), {
         center: { lat, lng: lon },
@@ -69,7 +53,6 @@ const app = createApp({
 
       const placesService = new google.maps.places.PlacesService(map);
 
-      // ❌ Fix: Clear Previous Search Results
       document.getElementById("nearby-places").innerHTML = "";
 
       serviceTypes.forEach((type) => {
@@ -90,25 +73,38 @@ const app = createApp({
           }
         );
       });
-    }
-
-    // ✅ Navigate to Register/Login Page
-    const goToRegister = () => {
-      window.location.href = "/register.html";
     };
 
-    // ✅ Start Emergency Call (Opens in New Page)
+    const sendMessage = () => {
+      if (newMessage.value.trim() === "") return;
+
+      const msg = {
+        user: userEmail.value || "Guest",
+        text: newMessage.value,
+      };
+
+      socket.emit("sendMessage", msg);
+
+      newMessage.value = "";
+    };
+
+    const clearChat = () => {
+      messages.value = [];
+    };
+
+    socket.on("receiveMessage", (msg) => {
+      messages.value.push(msg);
+    });
+
     const startEmergencyCall = (service) => {
       window.open(`video-call.html?service=${service}`, "_blank");
     };
 
-    // ✅ Logout
     const logout = () => {
       localStorage.removeItem('user');
       window.location.reload();
     };
 
-    // ✅ Login Function
     const login = () => {
       const users = JSON.parse(localStorage.getItem("users")) || [];
       const user = users.find(
@@ -123,64 +119,9 @@ const app = createApp({
       isAuthenticated.value = true;
       userEmail.value = user.email;
       localStorage.setItem('user', JSON.stringify(user));
-      
-      getLocation(); // ✅ Get user location after login
+
+      getLocation();
     };
-
-    // ✅ Google Maps Initialization
-   // Attach function to window object
-    window.initMap = function () {
-      const mapElement = document.getElementById("map");
-      if (!mapElement) {
-          console.error("Error: Map container not found!");
-          return;
-      }
-
-      // Initialize map
-      const map = new google.maps.Map(mapElement, {
-          center: { lat: 37.7749, lng: -122.4194 }, // San Francisco
-          zoom: 12,
-      });
-
-      console.log("✅ Google Maps Loaded Successfully!");
-    };
-
-  
-  
-    // ✅ Ensure Google Maps API Loads Properly
-    window.initMap = initMap;
-    document.addEventListener("DOMContentLoaded", function () {
-      if (window.google && google.maps) {
-        initMap();
-      } else {
-        console.error("Google Maps API failed to load.");
-      }
-    });
-
-    // ✅ Chat Functions
-    socket.on("receiveMessage", (msg) => {
-      messages.value.push(msg);
-    });
-
-    const sendMessage = () => {
-      if (newMessage.value.trim() === "") return;
-      
-      const msg = {
-        user: userEmail.value || "Guest",
-        text: newMessage.value,
-      };
-
-      socket.emit("sendMessage", msg);
-      messages.value.push(msg);
-      newMessage.value = ""; // Clear input after sending
-    };
-
-    const clearChat = () => {
-      messages.value = [];
-    };
-    const getNearbyPlaces = findNearbyServices;
-  
-
 
     return {
       isAuthenticated,
@@ -188,19 +129,15 @@ const app = createApp({
       email,
       password,
       errorMessage,
-      goToRegister,
+      sendMessage,
+      clearChat,
       startEmergencyCall,
       logout,
       login,
       getLocation,
-      initMap,
-      userLocation,
       findNearbyServices,
-      getNearbyPlaces,
-      messages,  // Chat Exports
+      messages,
       newMessage,
-      sendMessage,
-      clearChat,
     };
-  }
+  },
 }).mount('#app');

@@ -1,98 +1,82 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const urlParams = new URLSearchParams(window.location.search);
-    const service = urlParams.get("service") || "Emergency";
+// Agora credentials
+const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+let localTrack = [];  // Store local tracks for stopping them later
 
-    document.getElementById("service-name").textContent = `Connecting to ${service}...`;
+// Listen for remote stream
+client.on("user-published", async (user, mediaType) => {
+  console.log("Remote user published stream:", user.uid);
 
-    let peerConnection;
-    let localStream;
-    let remoteStream;
-    let interpreterStream;
+  // Subscribe to the remote stream
+  await client.subscribe(user, mediaType);
 
-    const socket = io(); // Ensure socket.io is connected
+  if (mediaType === "video") {
+    const remotePlayer = document.getElementById("remote-video");
+    user.videoTrack.play(remotePlayer);  // Attach remote video track to the remote-video element
+  }
 
-    const initializeVideoCall = async () => {
-        const localVideo = document.getElementById('localVideo');
-        const remoteVideo = document.getElementById('remoteVideo');
-        const interpreterVideo = document.getElementById('interpreterVideo');
-
-        if (!localVideo || !remoteVideo || !interpreterVideo) return;
-
-        try {
-            // Get local video/audio stream
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            localVideo.srcObject = localStream;
-
-            peerConnection = new RTCPeerConnection();
-
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-            // Handle incoming tracks
-            peerConnection.ontrack = (event) => {
-                if (!remoteStream) {
-                    remoteStream = event.streams[0];
-                    remoteVideo.srcObject = remoteStream;
-                } else if (!interpreterStream) {
-                    interpreterStream = event.streams[0];
-                    interpreterVideo.srcObject = interpreterStream;
-                }
-            };
-
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    socket.emit('candidate', event.candidate);
-                }
-            };
-
-            socket.on('candidate', (candidate) => {
-                peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-            });
-
-            socket.on('offer', async (offer) => {
-                peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
-                socket.emit('answer', answer);
-            });
-
-            socket.on('answer', (answer) => {
-                peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-            });
-
-        } catch (error) {
-            console.error('❌ Error accessing media devices:', error);
-        }
-    };
-
-    // Start emergency call
-    const startEmergencyCall = async (service) => {
-        if (!peerConnection) return;
-
-        try {
-            const room = `${service.toLowerCase()}-room`;
-            socket.emit('joinRoom', room);
-
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            socket.emit('offer', offer);
-        } catch (error) {
-            console.error("❌ Error starting emergency call:", error);
-        }
-    };
-
-    // End call function (added here)
-    const endCall = () => {
-        if (peerConnection) {
-            peerConnection.close();
-            peerConnection = null;
-            console.log('Call ended');
-        }
-
-        // Optionally, redirect the user back to the homepage or logout
-        window.location.href = '/'; // Redirect to homepage or logout
-    };
-        // Attach the endCall function to the button onclick event
-        document.getElementById('endCallButton').addEventListener('click', endCall);
-
-    initializeVideoCall();
+  if (mediaType === "audio") {
+    user.audioTrack.play();  // Attach remote audio track
+  }
 });
+
+// Listen for remote user leaving the channel
+client.on("user-unpublished", (user) => {
+  console.log("Remote user unpublished stream:", user.uid);
+
+  const remotePlayer = document.getElementById("remote-video");
+  if (remotePlayer) {
+    remotePlayer.srcObject = null;  // Clear the remote video element when the user leaves
+  }
+});
+
+async function startCall() {
+  const APP_ID = "54e1ec51a82942ed8040da70c83fa548";
+  const CHANNEL_NAME = "emergency-channel";
+  const TOKEN = "007eJxTYLiV4/XNvmbNM++DoZ0CU3dtq/y945b2hYalX18u3twz5ZWLAoOpSapharKpYaKFkaWJUWqKhYGJQUqiuUGyhXFaoqmJhbrT1/SGQEaGbfuKGBihEMQXZEjNTS1KT81LrtRNzkjMy0vNYWAAAHKlKHI=";
+  const uid = null;
+  //save call in data base once call starts
+
+  try {
+    await client.join(APP_ID, CHANNEL_NAME, TOKEN, uid); 
+    //save call in database using UID, channel name and token status of call in events
+
+    const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+    localTrack = [audioTrack, videoTrack];  // Store local tracks for later use
+
+    await client.publish([audioTrack, videoTrack]);
+    console.log("Published local stream");
+
+    const localPlayer = document.getElementById("local-video");
+    videoTrack.play(localPlayer);
+
+    // Disable Start Call button to prevent multiple clicks
+    const button = document.getElementById("start-call-btn");
+    button.disabled = true; 
+  } catch (err) {
+    console.error("Failed to join or publish:", err);
+  }
+}
+
+async function endCall() {
+  try {
+    await client.leave();  // Leave the Agora channel
+    console.log("Left the channel");
+
+    // Stop the local tracks (camera and microphone)
+    localTrack[0].stop();  // Stop the microphone
+    localTrack[1].stop();  // Stop the camera
+
+    // You can also clear the remote video stream if necessary:
+    const remotePlayer = document.getElementById("remote-video");
+    if (remotePlayer) {
+      remotePlayer.srcObject = null;
+    }
+
+    // Re-enable the Start Call button
+    const startButton = document.getElementById("start-call-btn");
+    if (startButton) startButton.disabled = false;
+
+  } catch (err) {
+    console.error("Error ending the call:", err);
+  }
+}

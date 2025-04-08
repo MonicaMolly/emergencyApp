@@ -7,18 +7,50 @@ body {
     padding: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
     color: white;
-    text-align: center;
 }
 
-/* Welcome Message */
-h2 {
-    font-size: 28px;
-    font-weight: bold;
-    margin-bottom: 20px;
+/* Logo Styling */
+.logo-container {
+    position: absolute;
+    top: 20px; 
+    left: 20px; 
+}
+
+.logo-container img {
+    width: 80px; 
+    opacity: 0.9; 
+}
+
+/* Container for all content */
+#app {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 100px;
+}
+
+/* Welcome Banner */
+.welcome-banner {
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 20px 30px;
+    border-radius: 15px;
+    text-align: center;
+    max-width: 600px;
+    margin-bottom: 30px;
+}
+
+.welcome-banner h1 {
+    margin: 0 0 10px;
+    font-size: 26px;
+    color: #34c759;
+}
+
+.welcome-banner p {
+    font-size: 16px;
+    color: #ddd;
 }
 
 /* Emergency Service Container */
@@ -30,13 +62,13 @@ h2 {
     margin-top: 20px;
 }
 
-/* Emergency Service Boxes */
+/* Emergency Service Cards */
 .card {
     background: rgba(0, 0, 0, 0.7);
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    width: 200px;
+    width: 180px;
     text-align: center;
     cursor: pointer;
     transition: transform 0.3s ease, background 0.3s ease;
@@ -47,16 +79,14 @@ h2 {
     background: rgba(0, 0, 0, 0.9);
 }
 
-/* Emergency Icons */
 .card img {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     margin-bottom: 10px;
 }
 
-/* Emergency Titles */
 .card h3 {
-    font-size: 20px;
+    font-size: 18px;
     color: #34c759;
 }
 
@@ -64,12 +94,12 @@ h2 {
 button {
     background-color: #34c759;
     color: white;
-    padding: 12px 20px;
+    padding: 10px 16px;
     font-size: 16px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    margin-top: 20px;
+    margin: 10px 5px 0;
     transition: background 0.3s ease;
 }
 
@@ -77,53 +107,144 @@ button:hover {
     background-color: #28a745;
 }
 
-/* Map Section */
+/* Location Section */
 #map {
-    width: 90%;
+    width: 100%;
     max-width: 600px;
     height: 300px;
     border-radius: 10px;
-    margin-top: 20px;
+    margin: 20px 0;
 }
 
-/* Live Chat */
+/* Live Chat Section */
 #chat-box {
-    width: 90%;
+    width: 100%;
     max-width: 500px;
     height: 200px;
     overflow-y: auto;
     background: rgba(0, 0, 0, 0.5);
-    padding: 10px;
+    padding: 15px;
     border-radius: 10px;
-    margin-top: 20px;
+    margin-top: 30px;
+    text-align: left;
+}
+
+.chat-message {
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+input[v-model="newMessage"] {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+    font-size: 14px;
 }
 
 /* Footer */
 .footer {
-    margin-top: auto;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.8);
     color: white;
     text-align: center;
-    padding: 12px;
+    padding: 16px;
     font-size: 14px;
-    position: relative;
-    width: 100%;
+    position: fixed;
     bottom: 0;
-    display: block;
+    width: 100%;
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 500px) {
+/* Responsive */
+@media (max-width: 600px) {
     .card-container {
         flex-direction: column;
         align-items: center;
     }
-    
+
     .card {
         width: 90%;
     }
 
-    h2 {
-        font-size: 24px;
+    .welcome-banner h1 {
+        font-size: 22px;
+    }
+
+    button {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    #map {
+        width: 100%;
     }
 }
+/* Video Call Container */
+#video-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    margin: 40px auto;
+    max-width: 900px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    flex-wrap: wrap;
+}
+
+/* Service Name */
+#service-name {
+    width: 100%;
+    text-align: center;
+    font-size: 26px;
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+/* Video Styling (Local & Remote) */
+#video-container video {
+    width: 400px;
+    height: 300px;
+    background: black;
+    border: 2px solid #34c759;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+/* Controls Section */
+#controls {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* End Call Button */
+#endCallButton {
+    background-color: #ff3b30;
+    color: white;
+    padding: 14px 28px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+#endCallButton:hover {
+    background-color: #e03127;
+}
+
+/* Mobile Responsive */
+@media (max-width: 850px) {
+    #video-container {
+        flex-direction: column;
+    }
+
+    #video-container video {
+        width: 90%;
+        height: auto;
+    }
+}
+

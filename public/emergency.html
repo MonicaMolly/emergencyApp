@@ -14,7 +14,9 @@
     <div id="app">
         <!-- Logo Section -->
         <header class="logo-container">
-            <img src="image/logo.png" alt="Emergency Call Logo"> Emergency Video Call
+            <a href="index.html">
+                <img src="image/logo.png" alt="Emergency Call Logo">
+            </a>
         </header>
 
         <!-- Welcome Banner -->
@@ -41,6 +43,12 @@
                 </div>
             </div>
         </div>
+        <script>
+            // Function to start emergency call and open the video call in a new page
+            const startEmergencyCall = (service) => {
+                window.open(`video-call.html?service=${service}`, "_blank");
+            };
+        </script>
     
         <p>Your Location: <span id="location">Fetching...</span></p>
         <button @click="getLocation"> Update Location</button>
@@ -63,7 +71,7 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <p>&copy; 2025 Emergency Video Call. All rights reserved.</p>
+            <p>&copy; 2025 Emergency Video Call. All rights reserved. Created by Monica.</p>
         </footer>
     </div>
 
