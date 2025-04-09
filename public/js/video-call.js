@@ -80,3 +80,7 @@ async function endCall() {
     console.error("Error ending the call:", err);
   }
 }
+ // Back to Home function
+ function goBackToHome() {
+  window.location.href = "emergency.html";  // Redirect back to the emergency page
+}
