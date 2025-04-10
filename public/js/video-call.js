@@ -1,6 +1,6 @@
 const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 let localTrack = [];
-let remoteTracks = {};
+let remoteTracks = {}; // To store remote tracks and their corresponding user info
 
 const APP_ID = "54e1ec51a82942ed8040da70c83fa548";
 const CHANNEL_NAME = "emergency-channel";
@@ -12,32 +12,34 @@ const urlParams = new URLSearchParams(window.location.search);
 const role = urlParams.get("role") || "Unknown";
 document.getElementById("caller-info").innerText = `Role: ${role}`;
 
-// Handle remote user publishing
+// When remote user publishes media
 client.on("user-published", async (user, mediaType) => {
   alert("Incoming call from " + (user.uid || "unknown user"));
+
   await client.subscribe(user, mediaType);
 
   if (mediaType === "video") {
-    const videoWrapper = document.createElement("div");
-    videoWrapper.id = `remote-wrapper-${user.uid}`;
-    videoWrapper.classList.add("video-wrapper");
-
     const remotePlayer = document.createElement("video");
     remotePlayer.id = `remote-video-${user.uid}`;
     remotePlayer.autoplay = true;
-    remotePlayer.playsInline = true;
+    remotePlayer.playsinline = true;
 
+    // Create name tag element
     const nameTag = document.createElement("div");
+    nameTag.id = `name-tag-${user.uid}`;
     nameTag.classList.add("name-tag");
     nameTag.innerText = `User ${user.uid}`;
 
-    videoWrapper.appendChild(remotePlayer);
-    videoWrapper.appendChild(nameTag);
+    // Append both the video and the name tag to the container
+    const videoContainer = document.getElementById("video-container");
+    videoContainer.appendChild(remotePlayer);
+    videoContainer.appendChild(nameTag);
 
-    document.getElementById("video-container").appendChild(videoWrapper);
-
+    // Play remote video
     user.videoTrack.play(remotePlayer);
-    remoteTracks[user.uid] = { videoTrack: user.videoTrack, wrapper: videoWrapper };
+
+    // Store remote track and user info
+    remoteTracks[user.uid] = { videoTrack: user.videoTrack, nameTag: nameTag };
   }
 
   if (mediaType === "audio") {
@@ -45,11 +47,16 @@ client.on("user-published", async (user, mediaType) => {
   }
 });
 
-// Handle remote user unpublishing
+// When remote user leaves
 client.on("user-unpublished", (user) => {
   console.log("Remote user unpublished:", user.uid);
-  const wrapper = document.getElementById(`remote-wrapper-${user.uid}`);
-  if (wrapper) wrapper.remove();
+  const remotePlayer = document.getElementById(`remote-video-${user.uid}`);
+  const nameTag = document.getElementById(`name-tag-${user.uid}`);
+  
+  if (remotePlayer) remotePlayer.srcObject = null;
+  if (nameTag) nameTag.remove();
+
+  // Remove from remoteTracks
   delete remoteTracks[user.uid];
 });
 
@@ -57,6 +64,7 @@ client.on("user-unpublished", (user) => {
 async function startCall() {
   try {
     await client.join(APP_ID, CHANNEL_NAME, TOKEN, uid);
+
     const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
     localTrack = [audioTrack, videoTrack];
 
@@ -72,9 +80,26 @@ async function startCall() {
   }
 }
 
-// Summary of Features:
-// ✅ Role Display: The role of the user is displayed in the name tag for every video stream.
+// End the call
+async function endCall() {
+  try {
+    await client.leave();
+    console.log("Left the channel");
 
-// ✅ Name Tags for Video Streams: Each user’s video has a corresponding name tag, allowing easy identification (you can replace the default "User" label with any name or role-based information).
+    if (localTrack.length > 0) {
+      localTrack.forEach(track => track.stop());
+    }
 
-// ✅ Dynamic Video Handling: Remote video streams dynamically appear and disappear when users join or leave the call.
+    document.getElementById("remote-video").srcObject = null;
+    document.getElementById("start-call-btn").disabled = false;
+
+    // Remove all remote tracks and name tags
+    Object.values(remoteTracks).forEach(({ videoTrack, nameTag }) => {
+      videoTrack.stop();
+      nameTag.remove();
+    });
+
+  } catch (err) {
+    console.error("End call failed:", err);
+  }
+}
