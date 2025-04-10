@@ -24,23 +24,11 @@ app.get('/', (req, res) => {
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB Connected'))
-  .catch(err => console.log('❌ MongoDB Connection Error:', err));
+  .catch(err => {
+    console.log('❌ MongoDB Connection Error:', err);
+    process.exit(1);  // Terminate server on DB failure
+  });
 
-// User Schema
-const userSchema = new mongoose.Schema({
-  name: String,
-  email: String,
-  password: String,
-});
-const User = mongoose.model('User', userSchema);
-
-// Emergency Call Schema
-const emergencyCallSchema = new mongoose.Schema({
-  userId: String,
-  location: String,
-  timestamp: { type: Date, default: Date.now },
-});
-const EmergencyCall = mongoose.model('EmergencyCall', emergencyCallSchema);
 
 // Chat Message Schema
 const chatMessageSchema = new mongoose.Schema({
@@ -49,6 +37,13 @@ const chatMessageSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now },
 });
 const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
+
+// Emergency Call Schema (define it before usage)
+const emergencyCallSchema = new mongoose.Schema({
+  userId: String, // User ID for the emergency call
+  timestamp: { type: Date, default: Date.now },
+});
+const EmergencyCall = mongoose.model('EmergencyCall', emergencyCallSchema);
 
 // WebSocket Events for signaling
 io.on('connection', (socket) => {
@@ -68,12 +63,23 @@ io.on('connection', (socket) => {
 
   // Emergency Call Feature
   socket.on('emergencyCall', async (call) => {
-    console.log(`🚨 Emergency Call from User: ${call.userId}, Location: ${call.location}`);
-    const emergencyCall = new EmergencyCall({ userId: call.userId, location: call.location });
-    await emergencyCall.save();
-    io.emit('emergencyAlert', call);
+    try {
+      if (!call || !call.userId || !call.serviceId) {
+        throw new Error('Missing call information');
+      }
+      console.log(`🚨 Emergency Call from User: ${call.userId}, Service: ${call.serviceId}`);
+  
+      const emergencyCall = new EmergencyCall({ userId: call.userId });
+      await emergencyCall.save();
+      io.emit('emergencyAlert', call);
+    } catch (err) {
+      console.error('Error processing emergency call:', err);
+      socket.emit('error', { message: 'Failed to process emergency call', error: err.message });
+    }
   });
+  
 
+  // Disconnect
   socket.on('disconnect', () => {
     console.log('❌ User disconnected');
   });

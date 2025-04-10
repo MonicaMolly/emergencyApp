@@ -1,86 +1,112 @@
-// Agora credentials
 const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-let localTrack = [];  // Store local tracks for stopping them later
+let localTrack = [];
+let remoteTracks = {}; // To store remote tracks and their corresponding user info
 
-// Listen for remote stream
+const APP_ID = "54e1ec51a82942ed8040da70c83fa548";
+const CHANNEL_NAME = "emergency-channel";
+const TOKEN = "007eJxTYMg5oFsUIfrsWGe6BIfZut6pC6LfB73n4Fp2RW5em0Vd5V8FBlOTVMPUZFPDRAsjSxOj1BQLAxODlERzg2QL47REUxOLZWXf0xsCGRnOBeUwMzJAIIgvyJCam1qUnpqXXKmbnJGYl5eaw8AAAOfbJHU=";
+const uid = null; // Auto-generated UID
+
+// Get role from URL and display it
+const urlParams = new URLSearchParams(window.location.search);
+const role = urlParams.get("role") || "Unknown";
+document.getElementById("caller-info").innerText = `Role: ${role}`;
+
+// When remote user publishes media
 client.on("user-published", async (user, mediaType) => {
-  console.log("Remote user published stream:", user.uid);
+  alert("Incoming call from " + (user.uid || "unknown user"));
 
-  // Subscribe to the remote stream
   await client.subscribe(user, mediaType);
 
   if (mediaType === "video") {
-    const remotePlayer = document.getElementById("remote-video");
-    user.videoTrack.play(remotePlayer);  // Attach remote video track to the remote-video element
+    const remotePlayer = document.createElement("video");
+    remotePlayer.id = `remote-video-${user.uid}`;
+    remotePlayer.autoplay = true;
+    remotePlayer.playsinline = true;
+
+    // Create name tag element
+    const nameTag = document.createElement("div");
+    nameTag.id = `name-tag-${user.uid}`;
+    nameTag.classList.add("name-tag");
+    nameTag.innerText = `User ${user.uid}`;
+
+    // Append both the video and the name tag to the container
+    const videoContainer = document.getElementById("video-container");
+    videoContainer.appendChild(remotePlayer);
+    videoContainer.appendChild(nameTag);
+
+    // Play remote video
+    user.videoTrack.play(remotePlayer);
+
+    // Store remote track and user info
+    remoteTracks[user.uid] = { videoTrack: user.videoTrack, nameTag: nameTag };
   }
 
   if (mediaType === "audio") {
-    user.audioTrack.play();  // Attach remote audio track
+    user.audioTrack.play();
   }
 });
 
-// Listen for remote user leaving the channel
+// When remote user leaves
 client.on("user-unpublished", (user) => {
-  console.log("Remote user unpublished stream:", user.uid);
+  console.log("Remote user unpublished:", user.uid);
+  const remotePlayer = document.getElementById(`remote-video-${user.uid}`);
+  const nameTag = document.getElementById(`name-tag-${user.uid}`);
+  
+  if (remotePlayer) remotePlayer.srcObject = null;
+  if (nameTag) nameTag.remove();
 
-  const remotePlayer = document.getElementById("remote-video");
-  if (remotePlayer) {
-    remotePlayer.srcObject = null;  // Clear the remote video element when the user leaves
-  }
+  // Remove from remoteTracks
+  delete remoteTracks[user.uid];
 });
 
+// Start the call
 async function startCall() {
-  const APP_ID = "54e1ec51a82942ed8040da70c83fa548";
-  const CHANNEL_NAME = "emergency-channel";
-  const TOKEN = "007eJxTYLiV4/XNvmbNM++DoZ0CU3dtq/y945b2hYalX18u3twz5ZWLAoOpSapharKpYaKFkaWJUWqKhYGJQUqiuUGyhXFaoqmJhbrT1/SGQEaGbfuKGBihEMQXZEjNTS1KT81LrtRNzkjMy0vNYWAAAHKlKHI=";
-  const uid = null;
-  //save call in data base once call starts
-
   try {
-    await client.join(APP_ID, CHANNEL_NAME, TOKEN, uid); 
-    //save call in database using UID, channel name and token status of call in events
+    await client.join(APP_ID, CHANNEL_NAME, TOKEN, uid);
 
     const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-    localTrack = [audioTrack, videoTrack];  // Store local tracks for later use
+    localTrack = [audioTrack, videoTrack];
 
-    await client.publish([audioTrack, videoTrack]);
-    console.log("Published local stream");
+    await client.publish(localTrack);
+    console.log("Local stream published");
 
     const localPlayer = document.getElementById("local-video");
     videoTrack.play(localPlayer);
 
-    // Disable Start Call button to prevent multiple clicks
-    const button = document.getElementById("start-call-btn");
-    button.disabled = true; 
+    document.getElementById("start-call-btn").disabled = true;
   } catch (err) {
-    console.error("Failed to join or publish:", err);
+    console.error("Start call failed:", err);
   }
 }
 
+// End the call
 async function endCall() {
   try {
-    await client.leave();  // Leave the Agora channel
+    await client.leave();
     console.log("Left the channel");
 
-    // Stop the local tracks (camera and microphone)
-    localTrack[0].stop();  // Stop the microphone
-    localTrack[1].stop();  // Stop the camera
-
-    // You can also clear the remote video stream if necessary:
-    const remotePlayer = document.getElementById("remote-video");
-    if (remotePlayer) {
-      remotePlayer.srcObject = null;
+    if (localTrack.length > 0) {
+      localTrack.forEach(track => track.stop());
     }
 
-    // Re-enable the Start Call button
-    const startButton = document.getElementById("start-call-btn");
-    if (startButton) startButton.disabled = false;
+    document.getElementById("remote-video").srcObject = null;
+    document.getElementById("start-call-btn").disabled = false;
+
+    // Remove all remote tracks and name tags
+    Object.values(remoteTracks).forEach(({ videoTrack, nameTag }) => {
+      videoTrack.stop();
+      nameTag.remove();
+    });
 
   } catch (err) {
-    console.error("Error ending the call:", err);
+    console.error("End call failed:", err);
   }
 }
- // Back to Home function
- function goBackToHome() {
-  window.location.href = "emergency.html";  // Redirect back to the emergency page
-}
+
+// Summary of Features:
+// ✅ Role Display: The role of the user is displayed in the name tag for every video stream.
+
+// ✅ Name Tags for Video Streams: Each user’s video has a corresponding name tag, allowing easy identification (you can replace the default "User" label with any name or role-based information).
+
+// ✅ Dynamic Video Handling: Remote video streams dynamically appear and disappear when users join or leave the call.

@@ -1,143 +1,58 @@
 const { createApp, ref } = Vue;
-const socket = io(); // ✅ Ensure Socket.IO connection
+const socket = io(); // Connect to the server
 
 const app = createApp({
   setup() {
-    const isAuthenticated = ref(false);
-    const userEmail = ref('');
-    const userLocation = ref({ lat: null, lon: null });
-    const email = ref('');
-    const password = ref('');
-    const errorMessage = ref('');
-
-    // Chat Variables
+    const userEmail = ref('Guest');  // Use 'Guest' if no user is logged in
     const messages = ref([]);
     const newMessage = ref('');
+    const errorMessage = ref("");
 
-    // Check if user is logged in
-    if (localStorage.getItem('user')) {
-      isAuthenticated.value = true;
-      userEmail.value = JSON.parse(localStorage.getItem('user')).email;
-    }
-
-    const getLocation = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            userLocation.value.lat = position.coords.latitude;
-            userLocation.value.lon = position.coords.longitude;
-            console.log("📍 Location: ", userLocation.value);
-
-            updateMap(userLocation.value.lat, userLocation.value.lon);
-            findNearbyServices(userLocation.value.lat, userLocation.value.lon);
-
-            socket.emit("sendLocation", userLocation.value);
-          },
-          (error) => {
-            console.error("❌ Location Error: ", error.message);
-          }
-        );
-      } else {
-        console.error("❌ Geolocation is not supported by this browser.");
-      }
-    };
-
-    const findNearbyServices = (lat, lon) => {
-      const serviceTypes = ["hospital", "police", "fire_station"];
-      const serviceNames = { hospital: "Hospital", police: "Police", fire_station: "Fire Station" };
-
-      const map = new google.maps.Map(document.createElement("div"), {
-        center: { lat, lng: lon },
-        zoom: 15,
-      });
-
-      const placesService = new google.maps.places.PlacesService(map);
-
-      document.getElementById("nearby-places").innerHTML = "";
-
-      serviceTypes.forEach((type) => {
-        placesService.nearbySearch(
-          {
-            location: { lat, lng: lon },
-            radius: 5000, // Search within 5km
-            type: type,
-          },
-          (results, status) => {
-            if (status === google.maps.places.PlacesServiceStatus.OK) {
-              results.forEach((place) => {
-                const listItem = document.createElement("li");
-                listItem.textContent = `${serviceNames[type]}: ${place.name} (${place.vicinity})`;
-                document.getElementById("nearby-places").appendChild(listItem);
-              });
-            }
-          }
-        );
-      });
-    };
-
+    // Send message function
     const sendMessage = () => {
       if (newMessage.value.trim() === "") return;
 
       const msg = {
-        user: userEmail.value || "Guest",
+        user: userEmail.value,  // Send the user email or 'Guest'
         text: newMessage.value,
       };
 
-      socket.emit("sendMessage", msg);
-
-      newMessage.value = "";
+      socket.emit("sendMessage", msg);  // Send message via socket
+      newMessage.value = "";  // Clear input after sending
     };
 
+    // Clear chat function
     const clearChat = () => {
-      messages.value = [];
+      messages.value = [];  // Clear the chat messages
     };
 
+    // Receive message from socket
     socket.on("receiveMessage", (msg) => {
-      messages.value.push(msg);
+      messages.value.push(msg);  // Add received message to chat
     });
 
+      // Function to start an emergency call (opens a new window with the video call page)
     const startEmergencyCall = (service) => {
-      window.open(`video-call.html?service=${service}`, "_blank");
-    };
-
-    const logout = () => {
-      localStorage.removeItem('user');
-      window.location.reload();
-    };
-
-    const login = () => {
-      const users = JSON.parse(localStorage.getItem("users")) || [];
-      const user = users.find(
-        (user) => user.email === email.value && user.password === password.value
-      );
-
-      if (!user) {
-        errorMessage.value = "Invalid email or password.";
-        return;
-      }
-
-      isAuthenticated.value = true;
-      userEmail.value = user.email;
-      localStorage.setItem('user', JSON.stringify(user));
-
-      getLocation();
+      const callerId = "caller_" + new Date().getTime();  // Generate a unique caller ID
+      const serviceId = service + "_id";  // Set the service ID (fire_id, police_id, hospital_id)
+      window.open(`video-call.html?callerId=${callerId}&serviceId=${serviceId}`, "_blank");
     };
 
     return {
-      isAuthenticated,
-      userEmail,
-      email,
-      password,
       errorMessage,
       sendMessage,
       clearChat,
       startEmergencyCall,
-      logout,
-      login,
-      getLocation,
-      findNearbyServices,
       messages,
       newMessage,
+      userEmail,  
     };
   },
 }).mount('#app');
+
+// Key Points in app.js:
+// User Login: We can use userEmail to personalize the experience if the user is logged in. However, if login is not mandatory, it will fall back to using "Guest" as the username.
+
+// Send & Receive Messages: The sendMessage function sends the chat messages to the server, and the receiveMessage function listens for incoming messages from the server and displays them in the chat.
+
+// Start Emergency Call: The startEmergencyCall function generates a unique caller ID and service ID and opens a new window with video-call.html, passing the IDs in the URL.

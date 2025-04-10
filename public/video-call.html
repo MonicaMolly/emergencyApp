@@ -1,25 +1,31 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Call</title>
-    <link rel="stylesheet" href="css/video-call.css">
-    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
-    <script src="js/video-call.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Emergency Video Call</title>
+  <link rel="stylesheet" href="css/video-call.css" />
+  <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
 </head>
 <body>
-    <div id="video-container">
-        <!-- Local video -->
-        <video id="local-video" autoplay muted></video>
-        
-        <!-- Remote video -->
-        <video id="remote-video" autoplay></video>
-        
-        <!-- Start and End call buttons -->
-        <button id="start-call-btn" onclick="startCall()">Start Call</button>
-        <button id="end-call-btn" onclick="endCall()">End Call</button>
+  <!-- Video container with caller info and video controls -->
+  <div id="video-container">
+    <!-- Display user role or caller information inside the video container -->
+    <div id="caller-info" style="text-align:center; font-weight:bold; margin-bottom:20px;"></div>
+
+    <!-- Video container for local and remote video streams -->
+    <div class="video-streams">
+      <video id="local-video" autoplay muted playsinline></video>
+      <video id="remote-video" autoplay playsinline></video>
     </div>
+
+    <!-- Controls for starting and ending the call -->
+    <div class="controls">
+      <button id="start-call-btn" onclick="startCall()">Start Call</button>
+      <button id="end-call-btn" onclick="endCall()">End Call</button>
+    </div>
+  </div>
+
+  <script src="js/video-call.js"></script>
 </body>
 </html>
-
