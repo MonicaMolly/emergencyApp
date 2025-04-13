@@ -8,8 +8,6 @@
   <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
 </head>
 <body>
-  <!-- Display user role or caller information -->
-  <div id="caller-info" style="text-align:center; font-weight:bold; margin-top:10px;"></div>
 
   <!-- Video container for local and remote video streams -->
   <div id="video-container">
@@ -27,8 +25,24 @@
       <button id="end-call-btn" onclick="endCall()">End Call</button>
     </div>
   </div>
+  <script>
+    fetch('/api/token')
+    .then(res => res.json())
+    .then(async ({ token, uid }) => {
+      const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
 
-  <!-- Link to your JavaScript file -->
+    await client.join(APP_ID, CHANNEL_NAME, token, uid);
+
+    const localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+    const localVideoTrack = await AgoraRTC.createCameraVideoTrack();
+
+    await client.publish([localAudioTrack, localVideoTrack]);
+
+    console.log('Local stream published!');
+  });
+  </script>
+
+  <!-- Link to video-call.js -->
   <script src="js/video-call.js"></script>
 </body>
 </html>

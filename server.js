@@ -17,18 +17,18 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve index.html on the root URL
+// Serve emergency.html on root
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'emergency.html'));
 });
 
+// MongoDB connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB Connected'))
   .catch(err => {
     console.log('❌ MongoDB Connection Error:', err);
-    process.exit(1);  // Terminate server on DB failure
+    process.exit(1); // Fail fast
   });
-
 
 // Chat Message Schema
 const chatMessageSchema = new mongoose.Schema({
@@ -38,46 +38,85 @@ const chatMessageSchema = new mongoose.Schema({
 });
 const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
 
-// Emergency Call Schema (define it before usage)
+// Emergency Call Schema
 const emergencyCallSchema = new mongoose.Schema({
-  userId: String, // User ID for the emergency call
+  userId: String,
+  serviceId: String,
   timestamp: { type: Date, default: Date.now },
 });
 const EmergencyCall = mongoose.model('EmergencyCall', emergencyCallSchema);
+// Agora Token Generation (Add at the bottom of your server.js)
 
-// WebSocket Events for signaling
+const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
+
+const APP_ID = process.env.AGORA_APP_ID; // Agora App ID
+const APP_CERTIFICATE = process.env.AGORA_APP_CERT; // Agora App Certificate
+const CHANNEL_NAME = 'emergency-video-call'; // Optional: use dynamic from frontend
+
+// Endpoint to generate token
+app.get('/api/token', (req, res) => {
+  const uid = req.query.uid || Math.floor(Math.random() * 100000);
+  const role = RtcRole.PUBLISHER;
+  const expireTimeSeconds = 3600;
+
+  const currentTimestamp = Math.floor(Date.now() / 1000);
+  const privilegeExpiredTs = currentTimestamp + expireTimeSeconds;
+
+  const token = RtcTokenBuilder.buildTokenWithUid(
+    APP_ID, APP_CERTIFICATE, CHANNEL_NAME, uid, role, privilegeExpiredTs
+  );
+
+  return res.json({ token, uid });
+});
+
+
+// Socket.io logic
 io.on('connection', (socket) => {
   console.log('🔗 User connected');
 
-  // Send previously stored chat messages when a user joins
+  // Load chat history
   ChatMessage.find().sort({ timestamp: 1 }).then((messages) => {
     socket.emit('receiveMessage', messages);
   });
 
+  // New chat message
   socket.on('sendMessage', async (msg) => {
-    console.log(`💬 New Message: ${msg.user}: ${msg.text}`);
+    console.log(`💬 ${msg.user}: ${msg.text}`);
     const chatMessage = new ChatMessage({ user: msg.user, message: msg.text });
     await chatMessage.save();
-    io.emit('receiveMessage', msg);
+    io.emit('receiveMessage', msg); // broadcast to all clients
   });
 
-  // Emergency Call Feature
+  // Alternate chat-message event (e.g., from another frontend script)
+  socket.on("chat-message", (data) => {
+    console.log("📨 Alt Chat received:", data);
+    socket.broadcast.emit("chat-message", data);
+  });
+
+  // Emergency call handling
   socket.on('emergencyCall', async (call) => {
     try {
       if (!call || !call.userId || !call.serviceId) {
         throw new Error('Missing call information');
       }
-      console.log(`🚨 Emergency Call from User: ${call.userId}, Service: ${call.serviceId}`);
-  
-      const emergencyCall = new EmergencyCall({ userId: call.userId });
+
+      console.log(`🚨 Emergency Call: ${call.userId} -> ${call.serviceId}`);
+
+      const emergencyCall = new EmergencyCall({
+        userId: call.userId,
+        serviceId: call.serviceId
+      });
+
       await emergencyCall.save();
-      io.emit('emergencyAlert', call);
+      io.emit('emergencyAlert', call); // Notify all clients
     } catch (err) {
-      console.error('Error processing emergency call:', err);
-      socket.emit('error', { message: 'Failed to process emergency call', error: err.message });
+      console.error('❌ Emergency call failed:', err);
+      socket.emit('error', {
+        message: 'Failed to process emergency call',
+        error: err.message
+      });
     }
   });
-  
 
   // Disconnect
   socket.on('disconnect', () => {
@@ -85,6 +124,8 @@ io.on('connection', (socket) => {
   });
 });
 
-// Start Server
+// Start server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+server.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
+});

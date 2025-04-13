@@ -2,9 +2,9 @@ const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 let localTrack = [];
 let remoteTracks = {}; // To store remote tracks and their corresponding user info
 
-const APP_ID = "54e1ec51a82942ed8040da70c83fa548";
-const CHANNEL_NAME = "emergency-channel";
-const TOKEN = "007eJxTYMg5oFsUIfrsWGe6BIfZut6pC6LfB73n4Fp2RW5em0Vd5V8FBlOTVMPUZFPDRAsjSxOj1BQLAxODlERzg2QL47REUxOLZWXf0xsCGRnOBeUwMzJAIIgvyJCam1qUnpqXXKmbnJGYl5eaw8AAAOfbJHU=";
+const APP_ID = "bfa1804981f744d08286c61ec8a20370";
+const CHANNEL_NAME = "emergency-video-call";
+const TOKEN = "007eJxTYCgu2hO5nPF+0NUnahEVGrpiodk9fKpP+xcou8lacTqE7lJgSEpLNLQwMLG0MEwzNzFJMbAwsjBLNjNMTbZINDIwNjeYlv87vSGQkcF/0WYmRgYIBPFFGFJzU4vSU/OSK3XLMlNS83WTE3NyGBgAaNAing==";
 const uid = null; // Auto-generated UID
 
 // Get role from URL and display it
