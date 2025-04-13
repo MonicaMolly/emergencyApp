@@ -107,15 +107,6 @@ button:hover {
     background-color: #28a745;
 }
 
-/* Location Section */
-#map {
-    width: 100%;
-    max-width: 600px;
-    height: 300px;
-    border-radius: 10px;
-    margin: 20px 0;
-}
-
 /* Live Chat Section */
 /* Live Chat Section */
 #chat-box {
@@ -225,10 +216,6 @@ button:hover {
     button {
         width: 100%;
         margin-top: 10px;
-    }
-
-    #map {
-        width: 100%;
     }
 }
 /* Video Call Container */

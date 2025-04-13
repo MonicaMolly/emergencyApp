@@ -8,37 +8,35 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="css/indexx.css">
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap&libraries=places"></script>
 </head>
 <body>
-
-    <div id="app">
-        <!-- Logo Section -->
-        <header class="logo-container">
-            <img src="image/logo.png" alt="Emergency Call Logo"> 
-        </header>
-
-        <!-- Main Intro Section -->
-        <main class="intro-container">
-            <h1 class="title">Emergency Video Call</h1>
-            <hr class="separator">
-            <p class="description">
-                A free emergency video call service designed for individuals with special needs. 
-                Instantly connect with emergency responders, interpreters, and support teams.
-            </p>
-            <p class="description">Stay safe, stay connected.</p>
-
-            <!-- Get Started Button -->
-            <div v-if="!isAuthenticated">
-                <a href="emergency.html" class="btn">Emergency Video Call</a>
-            </div>
-        </main>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <p>&copy; 2025 Emergency Video Call. All rights reserved.</p>
-        </footer>
+    <div id="app" class="wrapper">
+      <!-- Logo Section -->
+      <header class="logo-container">
+        <img src="image/logo.png" alt="Emergency Call Logo"> 
+      </header>
+  
+      <!-- Main Intro Section -->
+      <main class="intro-container">
+        <h1 class="title">Emergency Video Call</h1>
+        <hr class="separator">
+        <p class="description">
+          A free emergency video call service designed for individuals with special needs.
+          Instantly connect with emergency responders, interpreters, and support teams.
+        </p>
+        <p class="description">Stay safe, stay connected.</p>
+  
+        <!-- Get Started Button -->
+        <div v-if="!isAuthenticated">
+          <a href="emergency.html" class="btn">Emergency Video Call</a>
+        </div>
+      </main>
     </div>
-    
-</body>
+  
+    <!-- Footer outside the wrapper -->
+    <footer class="footer">
+      <p>&copy; 2025 Emergency Video Call. All rights reserved.</p>
+    </footer>
+  </body>
+  
 </html>
