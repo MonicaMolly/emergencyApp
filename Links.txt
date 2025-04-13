@@ -1,2 +1,2 @@
-https://github.com/MonicaMolly/emergencyApp //Live App
+https://github.com/MonicaMolly/emergencyApp.git //Live App
 https://emergencyapp-3.onrender.com // Github Repo
