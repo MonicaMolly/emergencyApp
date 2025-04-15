@@ -1,45 +1,34 @@
 const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 let localTrack = [];
-let remoteTracks = {}; // To store remote tracks and their corresponding user info
+let remoteTracks = {};
 
 const APP_ID = "bfa1804981f744d08286c61ec8a20370";
 const CHANNEL_NAME = "emergency-video-call";
-const TOKEN = "007eJxTYCgu2hO5nPF+0NUnahEVGrpiodk9fKpP+xcou8lacTqE7lJgSEpLNLQwMLG0MEwzNzFJMbAwsjBLNjNMTbZINDIwNjeYlv87vSGQkcF/0WYmRgYIBPFFGFJzU4vSU/OSK3XLMlNS83WTE3NyGBgAaNAing==";
-const uid = null; // Auto-generated UID
 
-// Get role from URL and display it
+// Get role from URL
 const urlParams = new URLSearchParams(window.location.search);
-const role = urlParams.get("role") || "Unknown";
+const role = urlParams.get("role") || "Host";
+
+// Update UI with role info
 document.getElementById("caller-info").innerText = `Role: ${role}`;
+document.getElementById("local-role").innerText = role;
+const remoteRole = role === "Host" ? "Responder" : "Host";
+document.getElementById("remote-role").innerText = remoteRole;
 
-// When remote user publishes media
+// Subscribe to remote user
 client.on("user-published", async (user, mediaType) => {
-  alert("Incoming call from " + (user.uid || "unknown user"));
-
   await client.subscribe(user, mediaType);
 
   if (mediaType === "video") {
-    const remotePlayer = document.createElement("video");
+    const remotePlayer = document.createElement("div");
     remotePlayer.id = `remote-video-${user.uid}`;
-    remotePlayer.autoplay = true;
-    remotePlayer.playsinline = true;
+    remotePlayer.style.width = "100%";
+    remotePlayer.style.height = "100%";
+    document.getElementById("remote-video").innerHTML = ""; // Clear previous
+    document.getElementById("remote-video").appendChild(remotePlayer);
 
-    // Create name tag element
-    const nameTag = document.createElement("div");
-    nameTag.id = `name-tag-${user.uid}`;
-    nameTag.classList.add("name-tag");
-    nameTag.innerText = `User ${user.uid}`;
-
-    // Append both the video and the name tag to the container
-    const videoContainer = document.getElementById("video-container");
-    videoContainer.appendChild(remotePlayer);
-    videoContainer.appendChild(nameTag);
-
-    // Play remote video
     user.videoTrack.play(remotePlayer);
-
-    // Store remote track and user info
-    remoteTracks[user.uid] = { videoTrack: user.videoTrack, nameTag: nameTag };
+    remoteTracks[user.uid] = user.videoTrack;
   }
 
   if (mediaType === "audio") {
@@ -47,23 +36,20 @@ client.on("user-published", async (user, mediaType) => {
   }
 });
 
-// When remote user leaves
+// Remove remote user
 client.on("user-unpublished", (user) => {
-  console.log("Remote user unpublished:", user.uid);
   const remotePlayer = document.getElementById(`remote-video-${user.uid}`);
-  const nameTag = document.getElementById(`name-tag-${user.uid}`);
-  
-  if (remotePlayer) remotePlayer.srcObject = null;
-  if (nameTag) nameTag.remove();
-
-  // Remove from remoteTracks
+  if (remotePlayer) remotePlayer.remove();
   delete remoteTracks[user.uid];
 });
 
 // Start the call
 async function startCall() {
   try {
-    await client.join(APP_ID, CHANNEL_NAME, TOKEN, uid);
+    const res = await fetch('/api/token');
+    const { token, uid } = await res.json();
+
+    await client.join(APP_ID, CHANNEL_NAME, token, uid);
 
     const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
     localTrack = [audioTrack, videoTrack];
@@ -71,12 +57,14 @@ async function startCall() {
     await client.publish(localTrack);
     console.log("Local stream published");
 
-    const localPlayer = document.getElementById("local-video");
-    videoTrack.play(localPlayer);
+    const localContainer = document.getElementById("local-video");
+    localContainer.innerHTML = ""; // Clear any previous content
+    videoTrack.play(localContainer);
 
     document.getElementById("start-call-btn").disabled = true;
   } catch (err) {
     console.error("Start call failed:", err);
+    alert("Start call failed. Please check camera/mic permissions.");
   }
 }
 
@@ -86,20 +74,25 @@ async function endCall() {
     await client.leave();
     console.log("Left the channel");
 
-    if (localTrack.length > 0) {
-      localTrack.forEach(track => track.stop());
-    }
-
-    document.getElementById("remote-video").srcObject = null;
-    document.getElementById("start-call-btn").disabled = false;
-
-    // Remove all remote tracks and name tags
-    Object.values(remoteTracks).forEach(({ videoTrack, nameTag }) => {
-      videoTrack.stop();
-      nameTag.remove();
+    localTrack.forEach(track => {
+      track.stop();
+      track.close();
     });
 
+    document.getElementById("start-call-btn").disabled = false;
+
+    document.getElementById("local-video").innerHTML = "";
+    document.getElementById("remote-video").innerHTML = "";
+
+    remoteTracks = {};
   } catch (err) {
     console.error("End call failed:", err);
   }
+}
+
+// Auto-join for responders (optional)
+if (role === "Responder") {
+  window.addEventListener('DOMContentLoaded', () => {
+    startCall();
+  });
 }

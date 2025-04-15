@@ -30,6 +30,14 @@ mongoose.connect(process.env.MONGO_URI)
     process.exit(1); // Fail fast
   });
 
+  // Agora Token Generation (Add at the bottom of your server.js)
+
+const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
+
+const APP_ID = process.env.AGORA_APP_ID; // Agora App ID
+const APP_CERTIFICATE = process.env.AGORA_APP_CERT; // Agora App Certificate
+const CHANNEL_NAME = 'emergency-video-call'; // Optional: use dynamic from frontend
+
 // Chat Message Schema
 const chatMessageSchema = new mongoose.Schema({
   user: String,
@@ -45,19 +53,12 @@ const emergencyCallSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now },
 });
 const EmergencyCall = mongoose.model('EmergencyCall', emergencyCallSchema);
-// Agora Token Generation (Add at the bottom of your server.js)
-
-const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
-
-const APP_ID = process.env.AGORA_APP_ID; // Agora App ID
-const APP_CERTIFICATE = process.env.AGORA_APP_CERT; // Agora App Certificate
-const CHANNEL_NAME = 'emergency-video-call'; // Optional: use dynamic from frontend
 
 // Endpoint to generate token
 app.get('/api/token', (req, res) => {
   const uid = req.query.uid || Math.floor(Math.random() * 100000);
   const role = RtcRole.PUBLISHER;
-  const expireTimeSeconds = 3600;
+  const expireTimeSeconds = 30 * 24 * 60 * 60; // 30 days
 
   const currentTimestamp = Math.floor(Date.now() / 1000);
   const privilegeExpiredTs = currentTimestamp + expireTimeSeconds;

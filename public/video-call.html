@@ -9,40 +9,34 @@
 </head>
 <body>
 
-  <!-- Video container for local and remote video streams -->
-  <div id="video-container">
-    <!-- Local video stream -->
-    <video id="local-video" autoplay muted playsinline></video>
-    
-    <!-- Remote video stream -->
-    <video id="remote-video" autoplay playsinline></video>
+  <!-- Caller Info -->
+  <div id="caller-info" style="margin-bottom: 20px; font-size: 20px; font-weight: bold;"></div>
 
-    <!-- Controls for call -->
-    <div class="controls">
-      <!-- Start call button -->
-      <button id="start-call-btn" onclick="startCall()">Start Call</button>
-      <!-- End call button -->
-      <button id="end-call-btn" onclick="endCall()">End Call</button>
+  <!-- Video container -->
+  <div id="video-container" class="video-layout">
+
+    <!-- Local video -->
+    <div class="video-box" id="local-wrapper">
+      <div class="video-label">You: <span id="local-role">Unknown</span></div>
+      <div id="local-video" style="width: 400px; height: 280px; background: black; border-radius: 14px;"></div>
     </div>
+
+    <!-- Remote video -->
+    <div class="video-box" id="remote-wrapper">
+      <div class="video-label">Remote: <span id="remote-role">Waiting...</span></div>
+      <div id="remote-video" style="width: 400px; height: 280px; background: black; border-radius: 14px;"></div>
+    </div>
+
   </div>
-  <script>
-    fetch('/api/token')
-    .then(res => res.json())
-    .then(async ({ token, uid }) => {
-      const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
 
-    await client.join(APP_ID, CHANNEL_NAME, token, uid);
+  <!-- Call Controls -->
+  <div class="controls" style="margin-top: 30px;">
+    <button id="start-call-btn" onclick="startCall()">Start Call</button>
+    <button id="end-call-btn" onclick="endCall()">End Call</button>
+  </div>
 
-    const localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-    const localVideoTrack = await AgoraRTC.createCameraVideoTrack();
-
-    await client.publish([localAudioTrack, localVideoTrack]);
-
-    console.log('Local stream published!');
-  });
-  </script>
-
-  <!-- Link to video-call.js -->
+  <!-- JS Logic -->
   <script src="js/video-call.js"></script>
+
 </body>
 </html>
